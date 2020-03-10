@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xsi:schemaLocation="
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+    http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
+    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd"
+>
+
+    <bean id="PropertiesConfigurer"  class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:log4j.properties</value>
+                <value>classpath:jdbc.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- 初始化SpringUtil 方便获取IOC bean -->
+    <bean id="springUtil" class="com.hicon.utils.SpringUtils" />
+
+
+    <context:component-scan base-package="com.hicon.*"  />
+
+
+    <!--
+    <context:component-scan base-package="com.hicon"  use-default-filters="false"  >
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+    </context:component-scan>
+    -->
+
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+        <property name="basePackage" value="com.hicon.*.*.mapper"></property>
+    </bean>
+
+    <import resource="datasource.xml"/>
+
+
+    <!-- 开启事务 -->
+    <bean id="transactionManager"  class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource"  ref="multipleDataSource" />
+    </bean>
+
+
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="multipleDataSource"></property>
+        <property name="configLocation" value="classpath:mybatis-config.xml"></property>
+    </bean>
+    
+	<bean id="dataSourceAspect" class="com.hicon.frame.DataSourceAspect" /> 
+	   
+    <aop:config proxy-target-class="true">    
+        <aop:aspect id="dataSourceAspect" ref="dataSourceAspect" order="2">    
+            <aop:pointcut id="tx" expression="execution(* com.hicon.v1.*.service.impl..*.*(..)) "/>    
+            <aop:before pointcut-ref="tx" method="before" />                
+        </aop:aspect>    
+    </aop:config>
+    <!-- 支持事物注解:@Transactional  -->
+    <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true"/>
+    
+    <aop:aspectj-autoproxy expose-proxy="true" />
+    <!-- 激活annotation功能 -->
+    <context:annotation-config />
+    <!-- 激活annotation功能 -->
+    <context:spring-configured/>
+</beans>

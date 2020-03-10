@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="
+	http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd"
+>
+
+    <!--
+		<context:component-scan/> 扫描指定的包中的类上的注解，常用的注解有：
+
+		@Controller 声明Action组件
+		@Service    声明Service组件    @Service("myMovieLister")
+		@Repository 声明Dao组件
+		@Component   泛指组件, 当不好归类时.
+		@RequestMapping("/menu")  请求映射
+		@Resource  用于注入，( j2ee提供的 ) 默认按名称装配，@Resource(name="beanName")
+		@Autowired 用于注入，(srping提供的) 默认按类型装配
+		@Transactional( rollbackFor={Exception.class}) 事务管理
+		@ResponseBody
+		@Scope("prototype")   设定bean的作用域
+	 -->
+    <!-- Spring容器优先加载由ServletContextListener（对应applicationContext.xml）产生的父容器，
+        而SpringMVC（对应mvc_dispatcher_servlet.xml）产生的是子容器。
+        子容器Controller进行扫描装配时装配的@Service注解的实例是没有经过事务加强处理，
+        即没有事务处理能力的Service，而父容器进行初始化的Service是保证事务的增强处理能力的。
+        如果不在子容器中将Service exclude掉，此时得到的将是原样的无事务处理能力的Service。 -->
+
+
+    <!--
+      <context:component-scan base-package="com.hicon"  />
+    -->
+
+    <!-- -->
+    <context:component-scan base-package="com.hicon.*" use-default-filters="false" >
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+    </context:component-scan>
+
+
+
+    <!-- 激活@Aspect注解支持 -->
+    <aop:aspectj-autoproxy  expose-proxy="true" />
+
+    <mvc:default-servlet-handler/>
+
+
+    <!-- 视图解释类 -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/"></property>
+        <property name="suffix" value=".jsp"></property>
+        <property name="contentType" value="text/jsp; charset=UTF-8"/>
+    </bean>
+
+
+    <bean class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">
+        <property name="mediaTypes">
+            <map>
+                <entry key="json"  value="application/json" />
+                <entry key="xml" value="text/xml" />
+                <entry key="htm" value="text/html" />
+            </map>
+        </property>
+        <property name="defaultContentType" value="application/json" />
+    </bean>
+    <!-- 
+	<mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/*" />
+            
+            <mvc:exclude-mapping path="/stb/bindTips"/>
+             
+            <bean class="com.hicon.frame.UserLoginInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+    -->
+
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter" >
+	    <property name="messageConverters">
+	        <list>
+	            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+	                <property name="supportedMediaTypes">
+	                    <list>
+	                        <value>text/plain;charset=utf-8</value>
+	                        <value>text/html;charset=UTF-8</value>
+	                    </list>
+	                </property>
+	            </bean>
+	        </list>
+	    </property>
+	</bean> 
+   <mvc:annotation-driven />
+</beans>

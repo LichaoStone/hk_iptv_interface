@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hicon.v1.setting.mapper.SettingMapper" > 
+	<!-- Result Map-->
+	<resultMap id="BaseResultMap" type="com.hicon.v1.setting.bean.Setting" >
+		<result column="id" property="id"/>
+		<result column="setting_key" property="settingKey"/>
+		<result column="name" property="name"/>
+		<result column="content" property="content"/>
+		<result column="creator" property="creator"/>
+		<result column="create_time" property="createTime"/>
+		<result column="update_time" property="updateTime"/>
+	</resultMap>
+	
+	
+	
+	<!-- 插入记录 -->
+	<insert id="insert" parameterType="com.hicon.v1.setting.bean.Setting" >
+		insert into t_setting(
+				setting_key,
+				name,
+				content,
+				creator,
+				create_time,
+				update_time
+		)values (
+				#{settingKey,jdbcType=VARCHAR},
+				#{name,jdbcType=VARCHAR},
+				#{content,jdbcType=VARCHAR},
+				#{creator,jdbcType=VARCHAR},
+				#{createTime,jdbcType=VARCHAR},
+				#{updateTime,jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<!-- 根据id，修改记录-->  
+	<update id="update" parameterType="com.hicon.v1.setting.bean.Setting" >
+	 	update t_setting set
+	 
+				id = #{id,jdbcType=VARCHAR},
+				name = #{name,jdbcType=VARCHAR},
+				content = #{content,jdbcType=VARCHAR},
+				creator = #{creator,jdbcType=VARCHAR},
+				create_time = #{createTime,jdbcType=VARCHAR},
+				update_time = #{updateTime,jdbcType=VARCHAR}
+		where setting_key = #{settingKey}
+	</update>
+	
+	<delete id="delete" parameterType="com.hicon.v1.setting.bean.Setting">
+		delete from t_setting where setting_key = #{settingKey}
+	</delete> 
+
+	<update id="updateBySelective" parameterType="com.hicon.v1.setting.bean.Setting" >
+		update t_setting  
+		<set> 
+					<if test="id != null">
+					    id = #{id},
+					</if>
+					<if test="name != null and name != ''">
+					    name = #{name},
+					</if>
+					<if test="content != null and content != ''">
+					    content = #{content},
+					</if>
+					<if test="creator != null and creator != ''">
+					    creator = #{creator},
+					</if>
+					<if test="createTime != null">
+					    create_time = #{createTime},
+					</if>
+					<if test="updateTime != null">
+					    update_time = #{updateTime},
+					</if>
+		</set>
+		where setting_key = #{settingKey}
+	</update> 
+	<!-- 自定义sql -->
+	
+	<!-- t_setting table all fields -->
+	<sql id="Base_Column_List" >
+			id,
+			setting_key,
+			name,
+			content,
+			creator,
+			create_time,
+			update_time
+	</sql>   	 
+	<!-- 查询条件 -->
+	<sql id="Example_Where_Clause">
+		where 1=1
+		<trim  suffixOverrides="," >
+				<if test="id != null">
+				    and id = #{id}
+				</if>
+				<if test="settingKey != null and settingKey != ''">
+				    and setting_key = #{settingKey}
+				</if>
+				<if test="name != null and name != ''">
+				    and name = #{name}
+				</if>
+				<if test="content != null and content != ''">
+				    and content = #{content}
+				</if>
+				<if test="creator != null and creator != ''">
+				    and creator = #{creator}
+				</if>
+				<if test="createTime != null">
+				    and create_time = #{createTime}
+				</if>
+				<if test="updateTime != null">
+				    and update_time = #{updateTime}
+				</if>
+		</trim>
+	</sql>
+	<!-- bean 扩展字段  -->
+	<resultMap id="BaseResultMapVo" extends="BaseResultMap" type="com.hicon.v1.setting.bean.vo.SettingVo" >
+	
+	</resultMap>
+	<!-- t_setting 信息 -->
+	<select id="getSettingBeanVoById"  resultMap="BaseResultMapVo" parameterType="Object">
+		select 
+		<include refid="Base_Column_List" /> 
+		from t_setting
+		where setting_key = #{settingKey}
+	</select>
+	 
+	 <select id="getCountByQuery" resultType="java.lang.Long"  parameterType="Object">
+		select count(1)
+		from t_setting 
+		<include refid="Example_Where_Clause"/>
+	</select>	
+	 
+	<!-- 查询t_setting列表 -->
+	<select id="getListByQuery" resultMap="BaseResultMapVo"  parameterType="Object">
+		select 
+		<include refid="Base_Column_List"/>
+		from t_setting 
+		<include refid="Example_Where_Clause"/>
+	</select>	
+</mapper>   

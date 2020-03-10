@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hicon.v1.hotword.mapper.HotwordSqlMapper" >
+    <!--查询热搜词-->
+    <select id="getHotList" parameterType="com.hicon.v1.hotword.bean.HotwordBean" resultType="map">
+        select
+            videoId,
+            videoName
+        from (
+            select
+                t_hot_key as videoId,
+                hot_words as videoName
+            from
+                t_search_hot
+            where
+                1=1
+                and  status=1
+                order by order_num asc,id desc
+        ) a
+         limit 10
+    </select>
+
+    <!--获取热搜词列表页数据-->
+    <select id="getHotwordList" parameterType="com.hicon.v1.hotword.bean.HotwordBean" resultType="map">
+        select
+            t_hot_key as tHotKey,
+            hot_words as hotWords,
+            case when status='1' then '启用' when status='2' then '禁用' else '其他' end status,
+            order_num as orderNum,
+            date_format(create_time,'%Y-%m-%d %H:%i:%s') as createTime
+        from
+            t_search_hot
+        where
+            1=1
+            <if test="hotWords != null and hotWords !='' ">
+                and hot_words like CONCAT('%',#{hotWords},'%')
+            </if>
+
+            <if test="status != null and status !='' ">
+                and status=#{status}
+            </if>
+            order by order_num asc,id desc
+    </select>
+
+    <!--修改热搜词状态-->
+    <update id="modifyStatus" parameterType="com.hicon.v1.hotword.bean.HotwordBean">
+        update
+            t_search_hot
+        set
+            status=#{status}
+        where
+            t_hot_key=#{tHotKey}
+    </update>
+
+    <!--删除热搜词-->
+    <delete id="delHotword" parameterType="com.hicon.v1.hotword.bean.HotwordBean">
+        delete from t_search_hot where t_hot_key=#{tHotKey}
+    </delete>
+
+    <!--修改热搜词-->
+    <update id="update" parameterType="com.hicon.v1.hotword.bean.HotwordBean">
+        update t_search_hot set hot_words=#{hotWords} where t_hot_key=#{tHotKey}
+    </update>
+
+    <!--新增热搜词-->
+    <insert id="addHotWord"  parameterType="com.hicon.v1.hotword.bean.HotwordBean">
+        insert into t_search_hot
+        (
+            t_hot_key,
+            hot_words,
+            status,
+            order_num,
+            creator,
+            create_time,
+            update_time
+        )
+        values
+        (
+            #{tHotKey},
+            #{hotWords},
+            #{status},
+            #{orderNum},
+            #{creator},
+            #{createTime},
+            #{updateTime}
+        )
+    </insert>
+
+    <!--批量删除热搜词-->
+    <delete id="bathDel" parameterType="com.hicon.v1.hotword.bean.HotwordBean">
+        delete from t_search_hot where t_hot_key in
+        <foreach collection="keyList" index="index" item="item" open="(" separator="," close=")" >
+             #{item}
+        </foreach>
+    </delete>
+
+    <!--获取热搜词总数量-->
+    <select id="getHotwordsCount" parameterType="com.hicon.v1.hotword.bean.HotwordBean">
+            select
+                count(t_hot_key)
+            from
+                t_search_hot
+            where
+                1=1
+                <if test="status != null and status !='' ">
+                    and status=#{status}
+                </if>
+    </select>
+
+</mapper>
